@@ -1,13 +1,14 @@
 package com.loudbook.minestom.api.game;
 
 import com.loudbook.minestom.api.event.InstanceLoadEvent;
+import com.loudbook.minestom.api.team.PlayerTeam;
+import com.loudbook.minestom.api.team.PlayerTeamManager;
 import com.loudbook.minestom.api.util.GeneralUtils;
 import dev.hypera.scaffolding.Scaffolding;
 import dev.hypera.scaffolding.schematic.Schematic;
 import lombok.Getter;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.Pos;
-import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.InstanceContainer;
 import net.minestom.server.instance.InstanceManager;
 import org.jglrxavpok.hephaistos.nbt.NBTException;
@@ -23,16 +24,15 @@ import java.util.stream.Stream;
 
 @Getter
 public class GameInstance {
-    private final InstanceContainer container;
-    private final Instance instance;
+    private final InstanceContainer instance;
     private final GameType gameType;
+    private List<PlayerTeam> teams;
 
-    public GameInstance(Instance instance, GameType type){
-        this.instance = instance;
+    public GameInstance(GameType type){
         this.gameType = type;
         InstanceManager manager = MinecraftServer.getInstanceManager();
-        this.container = manager.createInstanceContainer();
-        container.setGenerator(null);
+        this.instance = manager.createInstanceContainer();
+        instance.setGenerator(null);
     }
 
     public void init() throws IOException, NBTException {
@@ -52,12 +52,17 @@ public class GameInstance {
         if (schematic != null) {
             schematic.build(this.instance, new Pos(0, 0, 0));
             System.out.println("Loaded map " + map.getName() + "!");
-            MinecraftServer.getGlobalEventHandler().call(new InstanceLoadEvent(this.instance, this.container));
+            MinecraftServer.getGlobalEventHandler().call(new InstanceLoadEvent(this.instance, this.instance));
         } else {
             System.out.println("Something went wrong while loading the schematic! ABORTING!");
             return;
         }
         if (gameType == GameType.SURVIVAL){
+            PlayerTeamManager playerTeamManager = new PlayerTeamManager(GameType.SURVIVAL.getNumberOfTeams(), GameType.SURVIVAL.getPlayersPerTeam());
+            this.teams = playerTeamManager.getTeams();
+
+
+
         }
     }
 }

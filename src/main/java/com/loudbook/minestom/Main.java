@@ -1,5 +1,6 @@
 package com.loudbook.minestom;
 
+import com.loudbook.minestom.api.game.GameInstanceManager;
 import com.loudbook.minestom.api.game.GameType;
 import com.loudbook.minestom.api.player.PlayerManager;
 import com.loudbook.minestom.api.queue.Queue;
@@ -7,6 +8,7 @@ import com.loudbook.minestom.impl.commands.QueueCommand;
 import com.loudbook.minestom.impl.commands.StopCommand;
 import com.loudbook.minestom.impl.queue.QueueLogic;
 import com.loudbook.minestom.impl.survival.DamageHandler;
+import com.loudbook.minestom.impl.survival.PlayerJoinHandler;
 import com.loudbook.minestom.listener.PlayerLogin;
 import com.loudbook.minestom.listener.basics.BlockListener;
 import com.loudbook.minestom.listener.basics.PickupListener;
@@ -36,6 +38,7 @@ public class Main extends Extension {
         Map<Instance, GameType> instances = new HashMap<>();
         Queue queue = new Queue();
         PlayerManager playerManager = new PlayerManager();
+        GameInstanceManager gameInstanceManager = new GameInstanceManager(MinecraftServer.getInstanceManager());
 
         System.out.println("""
                                 
@@ -55,9 +58,9 @@ public class Main extends Extension {
                 """);
         MinecraftServer.setBrandName("Loudbook's Minigames");
         InstanceManager instanceManager = MinecraftServer.getInstanceManager();
-        // Create the instance
+
         InstanceContainer instanceContainer = instanceManager.createInstanceContainer();
-        // Set the ChunkGenerator
+
         instanceContainer.setGenerator(unit ->
                 unit.modifier().fillHeight(0, 40, Block.GRASS_BLOCK));
         GlobalEventHandler globalEventHandler = MinecraftServer.getGlobalEventHandler();
@@ -75,7 +78,8 @@ public class Main extends Extension {
                 .addListener(new QueueLogic(queue))
                 .addListener(new PickupListener())
                 .addListener(new DamageHandler(instances, playerManager))
-                .addListener(new RespawnListener(instanceContainer));
+                .addListener(new RespawnListener(instanceContainer))
+                .addListener(new PlayerJoinHandler(gameInstanceManager, instances));
 
         MinecraftServer.getCommandManager().register(new QueueCommand(queue, playerManager));
 
