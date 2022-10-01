@@ -1,6 +1,6 @@
 package com.loudbook.minestom.listener;
 
-import com.loudbook.minestom.Main;
+import com.loudbook.minestom.api.player.PlayerManager;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -11,6 +11,11 @@ import org.jetbrains.annotations.NotNull;
 
 public class PlayerLogin implements EventListener<PlayerLoginEvent> {
 
+    private final PlayerManager playerManager;
+
+    public PlayerLogin(PlayerManager playerManager) {
+        this.playerManager = playerManager;
+    }
 
     @Override
     public @NotNull Class<PlayerLoginEvent> eventType() {
@@ -26,9 +31,11 @@ public class PlayerLogin implements EventListener<PlayerLoginEvent> {
                 )
         );
 
-        PlayerSkin skin = PlayerSkin.fromUsername(event.getPlayer().getUsername());
+        PlayerSkin skin = PlayerSkin.fromUsername(event.getPlayer().getUsername()); // God i love spamming the mojang
+        // api
         event.getPlayer().setSkin(skin);
-        Main.getInstance().getPlayerManager().add(event.getPlayer());
+
+        playerManager.add(event.getPlayer());
 
         return Result.SUCCESS;
     }

@@ -1,17 +1,19 @@
 package com.loudbook.minestom.api.player;
 
-import com.loudbook.minestom.api.game.GameType;
-import lombok.Getter;
-import lombok.Setter;
 import net.minestom.server.entity.Player;
 
-@Getter
 public class MinigamePlayer {
-    private final Player player;
-    @Setter
-    private GameType queuedGame;
+    private Player player;
+
     public MinigamePlayer(Player player){
         this.player = player;
     }
 
+    public Player getPlayer() {
+        return player;
+    }
+
+    public void updatePlayer(Player player) { // Just in case player object becomes invalidated somehow
+        this.player = player;
+    }
 }

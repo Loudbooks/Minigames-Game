@@ -1,18 +1,20 @@
 package com.loudbook.minestom.api.game;
 
-import lombok.Getter;
-import lombok.Setter;
-
-@Getter
 public class Map {
     private final String name;
-    private final GameType type;
 
-    @Setter
-    private String mapPath;
+    private final String mapPath;
 
-    public Map(String name, GameType type){
+    public Map(String name, String mapPath){
         this.name = name;
-        this.type = type;
+        this.mapPath = mapPath;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getPath() {
+        return mapPath;
     }
 }

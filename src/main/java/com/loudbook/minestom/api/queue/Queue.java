@@ -1,8 +1,6 @@
 package com.loudbook.minestom.api.queue;
 
-import com.loudbook.minestom.api.player.MinigamePlayer;
 import com.loudbook.minestom.api.game.GameType;
-import lombok.Getter;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -10,7 +8,6 @@ import java.util.Map;
 import java.util.UUID;
 
 public class Queue {
-    @Getter
     private final Map<GameType, LinkedList<UUID>> priorityQueue = new HashMap<>();
 
     public Queue(){
@@ -19,25 +16,42 @@ public class Queue {
         }
     }
 
-    public LinkedList<UUID> getQueue(GameType type){
-        return priorityQueue.get(type);
+
+    /**
+     *
+     * @param type The game type to get the queued players for
+     * @return The queued players' UUIDs for {@link GameType}
+     */
+    public LinkedList<UUID> getQueued(GameType type){
+        return new LinkedList<>(priorityQueue.get(type)); //Return a copy of the queued players, SO WE CANT MODIFY
+        // THE QUEUE FROM THE OUTSIDE!!!!!!! (besides using the appropriate methods)
     }
 
     /**
-     * @param player Player to remove from the queue.
+     * @param type The game type to add the player to the queue for
+     * @param uuid Player's uuid to remove from the queue.
      */
-    public void remove(GameType type, MinigamePlayer player){
-        player.setQueuedGame(type);
-        priorityQueue.get(type).remove(player.getPlayer().getUuid());
+    public void removeFromQueue(GameType type, UUID uuid){
+        priorityQueue.get(type).remove(uuid);
     }
+
     /**
-     * @param player Player to add to the queue.
+     * @param type The game type to remove the player from the queue for
+     * @param uuid Player's uuid to add to the queue.
      */
-    public void add(GameType type, MinigamePlayer player){
-        player.setQueuedGame(type);
-        priorityQueue.get(type).addLast(player.getPlayer().getUuid());
+    public void add(GameType type, UUID uuid){
+        if(!getQueued(type).contains(uuid)){
+            priorityQueue.get(type).add(uuid);
+        } else {
+            throw new IllegalArgumentException("Player is already in the queue!");
+        }
     }
-    public UUID next(GameType type){
-        return priorityQueue.get(type).getFirst();
+
+    /**
+     * @param type The game type to remove the player from the queue for
+     * @return The player next in queue for the specified {@link GameType}.
+     */
+    public UUID nextInQueue(GameType type){
+        return getQueued(type).getFirst();
     }
 }
