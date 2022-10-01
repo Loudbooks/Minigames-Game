@@ -1,4 +1,4 @@
-package com.loudbook.minestom.api;
+package com.loudbook.minestom.api.player;
 
 import com.loudbook.minestom.api.game.GameType;
 import lombok.Getter;

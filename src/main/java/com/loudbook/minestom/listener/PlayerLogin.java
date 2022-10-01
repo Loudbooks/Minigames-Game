@@ -1,12 +1,9 @@
 package com.loudbook.minestom.listener;
 
+import com.loudbook.minestom.Main;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.Style;
-import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
-import net.kyori.adventure.util.RGBLike;
-import net.minestom.server.color.Color;
 import net.minestom.server.entity.PlayerSkin;
 import net.minestom.server.event.EventListener;
 import net.minestom.server.event.player.PlayerLoginEvent;
@@ -31,6 +28,7 @@ public class PlayerLogin implements EventListener<PlayerLoginEvent> {
 
         PlayerSkin skin = PlayerSkin.fromUsername(event.getPlayer().getUsername());
         event.getPlayer().setSkin(skin);
+        Main.getInstance().getPlayerManager().add(event.getPlayer());
 
         return Result.SUCCESS;
     }

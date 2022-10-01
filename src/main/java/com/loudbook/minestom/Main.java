@@ -1,12 +1,12 @@
 package com.loudbook.minestom;
 
+import com.loudbook.minestom.api.player.PlayerManager;
 import com.loudbook.minestom.api.queue.Queue;
 import com.loudbook.minestom.impl.commands.StopCommand;
 import com.loudbook.minestom.impl.queue.QueueLogic;
 import com.loudbook.minestom.listener.PlayerLogin;
 import com.loudbook.minestom.listener.basics.BlockListener;
 import com.loudbook.minestom.listener.basics.PickupListener;
-import io.github.bloepiloepi.pvp.PvpExtension;
 import lombok.Getter;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.Pos;
@@ -26,11 +26,14 @@ public class Main extends Extension {
     @Getter
     private static Main instance;
     @Getter
+    private PlayerManager playerManager;
+    @Getter
     private Queue queue;
 
     @Override
     public void initialize() {
         instance = this;
+        this.playerManager = new PlayerManager();
         System.out.println("""
                                 
                  ========================================================================================================
@@ -69,6 +72,9 @@ public class Main extends Extension {
                 .addListener(new QueueLogic())
                 .addListener(new PickupListener());
 
+        MinecraftServer.getCommandManager().register(new com.loudbook.minestom.impl.commands.Queue());
+
+
         BungeeCordProxy.enable();
 
         this.queue = new Queue();
@@ -77,7 +83,6 @@ public class Main extends Extension {
         globalEventHandler.addChild(entityNode);
         MinecraftServer.getCommandManager().register(new StopCommand());
 
-        PvpExtension.init();
 
 
 

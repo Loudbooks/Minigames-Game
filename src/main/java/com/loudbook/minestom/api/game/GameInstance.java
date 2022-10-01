@@ -4,7 +4,6 @@ import com.loudbook.minestom.api.event.InstanceLoadEvent;
 import com.loudbook.minestom.api.util.GeneralUtils;
 import dev.hypera.scaffolding.Scaffolding;
 import dev.hypera.scaffolding.schematic.Schematic;
-import io.github.bloepiloepi.pvp.PvpExtension;
 import lombok.Getter;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.Pos;
@@ -54,7 +53,6 @@ public class GameInstance {
             schematic.build(this.instance, new Pos(0, 0, 0));
             System.out.println("Loaded map " + map.getName() + "!");
             MinecraftServer.getGlobalEventHandler().call(new InstanceLoadEvent(this.instance, this.container));
-            this.instance.eventNode().addChild(PvpExtension.events());
         } else {
             System.out.println("Something went wrong while loading the schematic! ABORTING!");
             return;

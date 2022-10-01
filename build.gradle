@@ -17,7 +17,7 @@ repositories {
 dependencies {
     compileOnly 'org.projectlombok:lombok:1.18.24'
     annotationProcessor 'org.projectlombok:lombok:1.18.24'
-    implementation 'com.github.TogAr2:MinestomPvP:388378a6d6'
+//    shadow 'com.github.TogAr2:MinestomPvP:388378a6d6'
     testCompileOnly 'org.projectlombok:lombok:1.18.24'
     testAnnotationProcessor 'org.projectlombok:lombok:1.18.24'
     compileOnly 'com.github.Minestom:Minestom:-SNAPSHOT'

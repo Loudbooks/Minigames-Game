@@ -1,6 +1,6 @@
 package com.loudbook.minestom.api.queue;
 
-import com.loudbook.minestom.api.MinigamePlayer;
+import com.loudbook.minestom.api.player.MinigamePlayer;
 import com.loudbook.minestom.api.game.GameType;
 import lombok.Getter;
 
@@ -17,6 +17,10 @@ public class Queue {
         for (GameType value : GameType.values()) {
             priorityQueue.put(value, new LinkedList<>());
         }
+    }
+
+    public LinkedList<UUID> getQueue(GameType type){
+        return priorityQueue.get(type);
     }
 
     /**

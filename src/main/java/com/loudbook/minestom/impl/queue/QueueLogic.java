@@ -28,7 +28,6 @@ public class QueueLogic implements EventListener<InstanceTickEvent> {
                 if (player != null) {
                     if (queue.getPriorityQueue().get(type).indexOf(uuid) == 0){
                         //TODO Send them to the instance!
-
                     } else {
                         player.sendActionBar(Component.textOfChildren(
                                 Component.text("Queue position: ").color(NamedTextColor.GREEN),
