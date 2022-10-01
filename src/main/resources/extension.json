@@ -1,5 +1,5 @@
 {
-  "entrypoint": "com.loudbook.minestom.Main",
+  "entrypoint": "com.loudbook.minestom.Minigames",
   "name": "Minigames",
   "version": "1.0.0"
 }
