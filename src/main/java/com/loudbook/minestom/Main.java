@@ -1,8 +1,13 @@
 package com.loudbook.minestom;
 
+import com.loudbook.minestom.api.queue.Queue;
+import com.loudbook.minestom.impl.commands.StopCommand;
+import com.loudbook.minestom.impl.queue.QueueLogic;
+import com.loudbook.minestom.listener.PlayerLogin;
 import com.loudbook.minestom.listener.basics.BlockListener;
 import com.loudbook.minestom.listener.basics.PickupListener;
-import com.loudbook.minestom.listener.PlayerLogin;
+import io.github.bloepiloepi.pvp.PvpExtension;
+import lombok.Getter;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.Player;
@@ -12,13 +17,20 @@ import net.minestom.server.event.EventNode;
 import net.minestom.server.event.GlobalEventHandler;
 import net.minestom.server.event.player.PlayerLoginEvent;
 import net.minestom.server.extensions.Extension;
+import net.minestom.server.extras.bungee.BungeeCordProxy;
 import net.minestom.server.instance.InstanceContainer;
 import net.minestom.server.instance.InstanceManager;
 import net.minestom.server.instance.block.Block;
 
 public class Main extends Extension {
+    @Getter
+    private static Main instance;
+    @Getter
+    private Queue queue;
+
     @Override
     public void initialize() {
+        instance = this;
         System.out.println("""
                                 
                  ========================================================================================================
@@ -50,13 +62,23 @@ public class Main extends Extension {
         });
 
 
-        EventNode<Event> entityNode = EventNode.type("login-listener", EventFilter.ALL);
+        EventNode<Event> entityNode = EventNode.type("listeners", EventFilter.ALL);
         entityNode.addListener(new PlayerLogin());
-        entityNode.addListener(new BlockListener());
-        entityNode.addListener(new PickupListener());
+        entityNode
+                .addListener(new BlockListener())
+                .addListener(new QueueLogic())
+                .addListener(new PickupListener());
+
+        BungeeCordProxy.enable();
+
+        this.queue = new Queue();
 
 
         globalEventHandler.addChild(entityNode);
+        MinecraftServer.getCommandManager().register(new StopCommand());
+
+        PvpExtension.init();
+
 
 
 
