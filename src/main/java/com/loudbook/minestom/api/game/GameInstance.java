@@ -44,7 +44,7 @@ public class GameInstance {
                     .filter(Files::isRegularFile)
                     .forEach(path -> maps.add(path.toString()));
         }
-        Map map = new Map(GeneralUtils.randomString(maps), gameType);
+        Map map = new Map(GeneralUtils.randomListElement(maps), gameType);
         String directory = "schematics/" + type + "/" + map.getName() + ".schematic";
 
         Schematic schematic = Scaffolding.fromFile(new File(directory));
@@ -57,6 +57,7 @@ public class GameInstance {
             System.out.println("Something went wrong while loading the schematic! ABORTING!");
             return;
         }
-
+        if (gameType == GameType.SURVIVAL){
+        }
     }
 }

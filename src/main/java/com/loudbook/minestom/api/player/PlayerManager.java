@@ -12,7 +12,7 @@ public class PlayerManager {
     private final Map<UUID, MinigamePlayer> playerMap = new HashMap<>();
     public MinigamePlayer add(Player player){
         if (!playerMap.containsKey(player.getUuid())){
-            playerMap.put(player.getUuid(), new MinigamePlayer(player));
+            playerMap.put(player.getUuid(), new MinigamePlayer(player, player.getSkin()));
         }
         return get(player);
     }

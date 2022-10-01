@@ -27,7 +27,7 @@ public class Queue {
      * @param player Player to remove from the queue.
      */
     public void remove(GameType type, MinigamePlayer player){
-        player.setQueuedGame(type);
+        player.setQueuedGame(null);
         priorityQueue.get(type).remove(player.getPlayer().getUuid());
     }
     /**

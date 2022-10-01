@@ -1,13 +1,16 @@
 package com.loudbook.minestom;
 
+import com.loudbook.minestom.api.game.GameType;
 import com.loudbook.minestom.api.player.PlayerManager;
 import com.loudbook.minestom.api.queue.Queue;
+import com.loudbook.minestom.impl.commands.QueueCommand;
 import com.loudbook.minestom.impl.commands.StopCommand;
 import com.loudbook.minestom.impl.queue.QueueLogic;
+import com.loudbook.minestom.impl.survival.DamageHandler;
 import com.loudbook.minestom.listener.PlayerLogin;
 import com.loudbook.minestom.listener.basics.BlockListener;
 import com.loudbook.minestom.listener.basics.PickupListener;
-import lombok.Getter;
+import com.loudbook.minestom.listener.basics.RespawnListener;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.Player;
@@ -18,22 +21,22 @@ import net.minestom.server.event.GlobalEventHandler;
 import net.minestom.server.event.player.PlayerLoginEvent;
 import net.minestom.server.extensions.Extension;
 import net.minestom.server.extras.bungee.BungeeCordProxy;
+import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.InstanceContainer;
 import net.minestom.server.instance.InstanceManager;
 import net.minestom.server.instance.block.Block;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class Main extends Extension {
-    @Getter
-    private static Main instance;
-    @Getter
-    private PlayerManager playerManager;
-    @Getter
-    private Queue queue;
 
     @Override
     public void initialize() {
-        instance = this;
-        this.playerManager = new PlayerManager();
+        Map<Instance, GameType> instances = new HashMap<>();
+        Queue queue = new Queue();
+        PlayerManager playerManager = new PlayerManager();
+
         System.out.println("""
                                 
                  ========================================================================================================
@@ -66,22 +69,23 @@ public class Main extends Extension {
 
 
         EventNode<Event> entityNode = EventNode.type("listeners", EventFilter.ALL);
-        entityNode.addListener(new PlayerLogin());
         entityNode
+                .addListener(new PlayerLogin(playerManager, instanceContainer))
                 .addListener(new BlockListener())
-                .addListener(new QueueLogic())
-                .addListener(new PickupListener());
+                .addListener(new QueueLogic(queue))
+                .addListener(new PickupListener())
+                .addListener(new DamageHandler(instances, playerManager))
+                .addListener(new RespawnListener(instanceContainer));
 
-        MinecraftServer.getCommandManager().register(new com.loudbook.minestom.impl.commands.Queue());
+        MinecraftServer.getCommandManager().register(new QueueCommand(queue, playerManager));
 
 
         BungeeCordProxy.enable();
 
-        this.queue = new Queue();
-
-
         globalEventHandler.addChild(entityNode);
         MinecraftServer.getCommandManager().register(new StopCommand());
+
+
 
 
 
