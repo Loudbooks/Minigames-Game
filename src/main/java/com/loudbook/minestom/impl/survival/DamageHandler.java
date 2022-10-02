@@ -1,6 +1,5 @@
 package com.loudbook.minestom.impl.survival;
 
-import com.loudbook.minestom.api.game.GameType;
 import com.loudbook.minestom.api.player.MinigamePlayer;
 import com.loudbook.minestom.api.player.PlayerManager;
 import net.minestom.server.MinecraftServer;
@@ -8,19 +7,14 @@ import net.minestom.server.entity.Player;
 import net.minestom.server.entity.damage.DamageType;
 import net.minestom.server.event.EventListener;
 import net.minestom.server.event.entity.EntityAttackEvent;
-import net.minestom.server.instance.Instance;
 import net.minestom.server.item.Material;
 import net.minestom.server.timer.TaskSchedule;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Map;
-
 public class DamageHandler implements EventListener<EntityAttackEvent> {
-    private final Map<Instance, GameType> instances;
     private final PlayerManager manager;
 
-    public DamageHandler(Map<Instance, GameType> instances, PlayerManager manager){
-        this.instances = instances;
+    public DamageHandler(PlayerManager manager){
         this.manager = manager;
     }
     @Override

@@ -9,10 +9,10 @@ public enum TeamColors {
     BLUE(NamedTextColor.BLUE),
     YELLOW(NamedTextColor.YELLOW),
     GREEN(NamedTextColor.GREEN),
-    PINK(NamedTextColor.LIGHT_PURPLE),
-    PURPLE(NamedTextColor.DARK_PURPLE),
     AQUA(NamedTextColor.AQUA),
-    WHITE(NamedTextColor.WHITE);
+    WHITE(NamedTextColor.WHITE),
+    PINK(NamedTextColor.LIGHT_PURPLE),
+    PURPLE(NamedTextColor.DARK_PURPLE);
 
     @Getter
     private final NamedTextColor color;

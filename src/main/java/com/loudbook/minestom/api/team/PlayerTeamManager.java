@@ -14,7 +14,9 @@ public class PlayerTeamManager {
         List<TeamColors> types = List.of(TeamColors.values());
         for (int i = 0; i < numberOfTeams; i++){
             System.out.println("Team created: " + types.get(i).getColor());
+
             this.teams.add(new PlayerTeam(types.get(i).getColor(), playersPerTeam));
         }
     }
+
 }

@@ -1,9 +1,10 @@
 package com.loudbook.minestom;
 
 import com.loudbook.minestom.api.game.GameInstanceManager;
-import com.loudbook.minestom.api.game.GameType;
 import com.loudbook.minestom.api.player.PlayerManager;
 import com.loudbook.minestom.api.queue.Queue;
+import com.loudbook.minestom.impl.commands.CreateGameCommand;
+import com.loudbook.minestom.impl.commands.CreativeCommand;
 import com.loudbook.minestom.impl.commands.QueueCommand;
 import com.loudbook.minestom.impl.commands.StopCommand;
 import com.loudbook.minestom.impl.queue.QueueLogic;
@@ -23,23 +24,22 @@ import net.minestom.server.event.GlobalEventHandler;
 import net.minestom.server.event.player.PlayerLoginEvent;
 import net.minestom.server.extensions.Extension;
 import net.minestom.server.extras.bungee.BungeeCordProxy;
-import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.InstanceContainer;
 import net.minestom.server.instance.InstanceManager;
 import net.minestom.server.instance.block.Block;
-
-import java.util.HashMap;
-import java.util.Map;
+import net.minestom.server.utils.NamespaceID;
+import net.minestom.server.world.DimensionType;
 
 public class Main extends Extension {
-
+    public static DimensionType fullbright = DimensionType.builder(NamespaceID.from("minestom:full_bright"))
+            .ambientLight(2.0f)
+            .build();
     @Override
     public void initialize() {
-        Map<Instance, GameType> instances = new HashMap<>();
         Queue queue = new Queue();
         PlayerManager playerManager = new PlayerManager();
         GameInstanceManager gameInstanceManager = new GameInstanceManager(MinecraftServer.getInstanceManager());
-
+        MinecraftServer.getDimensionTypeManager().addDimension(fullbright);
         System.out.println("""
                                 
                  ========================================================================================================
@@ -59,7 +59,7 @@ public class Main extends Extension {
         MinecraftServer.setBrandName("Loudbook's Minigames");
         InstanceManager instanceManager = MinecraftServer.getInstanceManager();
 
-        InstanceContainer instanceContainer = instanceManager.createInstanceContainer();
+        InstanceContainer instanceContainer = instanceManager.createInstanceContainer(fullbright);
 
         instanceContainer.setGenerator(unit ->
                 unit.modifier().fillHeight(0, 40, Block.GRASS_BLOCK));
@@ -67,7 +67,7 @@ public class Main extends Extension {
         globalEventHandler.addListener(PlayerLoginEvent.class, event -> {
             final Player player = event.getPlayer();
             event.setSpawningInstance(instanceContainer);
-            player.setRespawnPoint(new Pos(0, 42, 0));
+            player.setRespawnPoint(new Pos(0, 100, 0));
         });
 
 
@@ -77,17 +77,21 @@ public class Main extends Extension {
                 .addListener(new BlockListener())
                 .addListener(new QueueLogic(queue))
                 .addListener(new PickupListener())
-                .addListener(new DamageHandler(instances, playerManager))
+                .addListener(new DamageHandler(playerManager))
                 .addListener(new RespawnListener(instanceContainer))
-                .addListener(new PlayerJoinHandler(gameInstanceManager, instances));
+                .addListener(new PlayerJoinHandler(gameInstanceManager, gameInstanceManager.getGameInstances()));
 
         MinecraftServer.getCommandManager().register(new QueueCommand(queue, playerManager));
+        MinecraftServer.getCommandManager().register(new StopCommand());
+        MinecraftServer.getCommandManager().register(new CreativeCommand());
+        MinecraftServer.getCommandManager().register(new CreateGameCommand(gameInstanceManager));
+
+
 
 
         BungeeCordProxy.enable();
 
         globalEventHandler.addChild(entityNode);
-        MinecraftServer.getCommandManager().register(new StopCommand());
 
 
 

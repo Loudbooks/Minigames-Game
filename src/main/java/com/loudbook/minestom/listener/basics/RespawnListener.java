@@ -20,7 +20,6 @@ public class RespawnListener implements EventListener<PlayerRespawnEvent> {
         instance.getPlayers().forEach((player -> {
             System.out.println(player.getInstance());
         }));
-        event.getPlayer().sendMessage("respawned");
         return Result.SUCCESS;
     }
 }
