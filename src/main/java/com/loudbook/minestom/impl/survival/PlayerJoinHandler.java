@@ -26,6 +26,7 @@ public class PlayerJoinHandler implements EventListener<AddEntityToInstanceEvent
 
     @Override
     public @NotNull Result run(@NotNull AddEntityToInstanceEvent event) {
+        if (!(event.getEntity() instanceof net.minestom.server.entity.Player)) return Result.SUCCESS;
         event.getEntity().teleport(new Pos(0, 100, 0));
         return Result.SUCCESS;
     }
