@@ -3,12 +3,10 @@ package com.loudbook.minestom;
 import com.loudbook.minestom.api.game.GameInstanceManager;
 import com.loudbook.minestom.api.player.PlayerManager;
 import com.loudbook.minestom.api.queue.Queue;
-import com.loudbook.minestom.impl.commands.CreateGameCommand;
-import com.loudbook.minestom.impl.commands.CreativeCommand;
-import com.loudbook.minestom.impl.commands.QueueCommand;
-import com.loudbook.minestom.impl.commands.StopCommand;
+import com.loudbook.minestom.impl.commands.*;
 import com.loudbook.minestom.impl.queue.QueueLogic;
 import com.loudbook.minestom.impl.survival.DamageHandler;
+import com.loudbook.minestom.impl.survival.DeathHandler;
 import com.loudbook.minestom.impl.survival.PlayerJoinHandler;
 import com.loudbook.minestom.listener.PlayerLogin;
 import com.loudbook.minestom.listener.basics.BlockListener;
@@ -38,7 +36,7 @@ public class Main extends Extension {
     public void initialize() {
         Queue queue = new Queue();
         PlayerManager playerManager = new PlayerManager();
-        GameInstanceManager gameInstanceManager = new GameInstanceManager(MinecraftServer.getInstanceManager());
+        GameInstanceManager gameInstanceManager = new GameInstanceManager(MinecraftServer.getInstanceManager(), playerManager);
         MinecraftServer.getDimensionTypeManager().addDimension(fullbright);
         System.out.println("""
                                 
@@ -75,16 +73,19 @@ public class Main extends Extension {
         entityNode
                 .addListener(new PlayerLogin(playerManager, instanceContainer))
                 .addListener(new BlockListener())
-                .addListener(new QueueLogic(queue))
+                .addListener(new QueueLogic(queue, gameInstanceManager, playerManager))
                 .addListener(new PickupListener())
                 .addListener(new DamageHandler(playerManager))
                 .addListener(new RespawnListener(instanceContainer))
-                .addListener(new PlayerJoinHandler(gameInstanceManager, gameInstanceManager.getGameInstances()));
+                .addListener(new PlayerJoinHandler(gameInstanceManager, gameInstanceManager.getGameInstances()))
+                .addListener(new DeathHandler(playerManager));
 
         MinecraftServer.getCommandManager().register(new QueueCommand(queue, playerManager));
         MinecraftServer.getCommandManager().register(new StopCommand());
         MinecraftServer.getCommandManager().register(new CreativeCommand());
-        MinecraftServer.getCommandManager().register(new CreateGameCommand(gameInstanceManager));
+        MinecraftServer.getCommandManager().register(new CreateGameCommand(gameInstanceManager, playerManager));
+        MinecraftServer.getCommandManager().register(new VanishCommand(playerManager));
+
 
 
 

@@ -1,5 +1,6 @@
 package com.loudbook.minestom.impl.survival;
 
+import com.loudbook.minestom.api.event.PlayerDeathEvent;
 import com.loudbook.minestom.api.player.MinigamePlayer;
 import com.loudbook.minestom.api.player.PlayerManager;
 import net.minestom.server.MinecraftServer;
@@ -29,6 +30,7 @@ public class DamageHandler implements EventListener<EntityAttackEvent> {
         if (!(event.getEntity() instanceof Player player)) return Result.SUCCESS;
         if (!(event.getTarget() instanceof Player target)) return Result.SUCCESS;
         MinigamePlayer minigamePlayer = manager.get(player);
+        MinigamePlayer minigameTarget = manager.get(target);
         player.sendMessage(String.valueOf(minigamePlayer.isCombatCooldown()));
         if (!minigamePlayer.isCombatCooldown()) {
             int damageAmount = 1;
@@ -43,7 +45,7 @@ public class DamageHandler implements EventListener<EntityAttackEvent> {
                         Math.sin(player.getPosition().yaw() * (Math.PI / 180)),
                         -(Math.cos(player.getPosition().yaw() * (Math.PI / 180))));
             } else {
-                target.kill();
+                MinecraftServer.getGlobalEventHandler().call(new PlayerDeathEvent(minigameTarget, minigamePlayer, player.getInstance()));
             }
             minigamePlayer.setCombatCooldown(true);
             MinecraftServer.getSchedulerManager().scheduleTask(()->{
