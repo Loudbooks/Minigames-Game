@@ -47,7 +47,7 @@ public class DamageHandler implements EventListener<EntityAttackEvent> {
             } else {
                 MinecraftServer.getGlobalEventHandler().call(new PlayerDeathEvent(minigameTarget, minigamePlayer, player.getInstance()));
             }
-            minigamePlayer.setCombatCooldown(true);
+//            minigamePlayer.setCombatCooldown(true);
             MinecraftServer.getSchedulerManager().scheduleTask(()->{
                 minigamePlayer.setCombatCooldown(false);
             }, TaskSchedule.millis(225), TaskSchedule.stop());

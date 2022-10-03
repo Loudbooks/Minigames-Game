@@ -2,7 +2,7 @@ package com.loudbook.minestom.api.game;
 
 import com.loudbook.minestom.api.event.SchematicLoadEvent;
 import com.loudbook.minestom.api.player.PlayerManager;
-import com.loudbook.minestom.api.team.PlayerTeam;
+import com.loudbook.minestom.api.team.PlayerTeamManager;
 import com.loudbook.minestom.api.util.GeneralUtils;
 import dev.hypera.scaffolding.Scaffolding;
 import dev.hypera.scaffolding.schematic.Schematic;
@@ -15,6 +15,8 @@ import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.Player;
 import net.minestom.server.instance.InstanceContainer;
 import net.minestom.server.instance.InstanceManager;
+import net.minestom.server.timer.ExecutionType;
+import net.minestom.server.timer.TaskSchedule;
 import org.jglrxavpok.hephaistos.nbt.NBTException;
 
 import java.io.File;
@@ -26,9 +28,12 @@ import static com.loudbook.minestom.Main.fullbright;
 
 @Getter
 public class GameInstance {
+    @Setter
+    private boolean isReady = false;
+    private final Countdown countdown;
     private final InstanceContainer instance;
     private final GameType gameType;
-    private List<PlayerTeam> teams;
+    private final PlayerTeamManager teamManager;
     private final PlayerManager playerManager;
     @Setter
     private List<Player> playersWaiting = new ArrayList<>();
@@ -36,6 +41,7 @@ public class GameInstance {
     private final GameInstanceManager manager;
 
     public GameInstance(GameType type, GameInstanceManager gameInstanceManager, PlayerManager playerManager) {
+        this.teamManager = new PlayerTeamManager(type.getNumberOfTeams(), type.getPlayersPerTeam());
         this.playerManager = playerManager;
         this.gameType = type;
         InstanceManager manager = MinecraftServer.getInstanceManager();
@@ -44,9 +50,10 @@ public class GameInstance {
         this.manager = gameInstanceManager;
         instance.setGenerator(null);
         this.capacity = this.gameType.getPlayersPerTeam() * this.gameType.getNumberOfTeams();
+        this.countdown = new Countdown(20, 9, this);
     }
 
-    public void init(Player player) throws IOException {
+    public void init(Player player) {
         playersWaiting.add(player);
         System.out.println("---------------------------------");
         System.out.println("Running initialization for player " + player.getUsername());
@@ -66,20 +73,7 @@ public class GameInstance {
 
 
         System.out.println("Loading map " + map.getName() + " from " + map.getMapPath());
-        Thread thread = new Thread(() -> {
-            Schematic schematic;
-            try {
-                schematic = Scaffolding.fromFile(new File(directory));
-            } catch (IOException | NBTException e) {
-                throw new RuntimeException(e);
-            }
-            schematic.build(instance, new Pos(0, 40, 0)).whenComplete((result, exception) -> {
-                System.out.println("Map loaded!");
-                new SchematicLoadEvent(instance, gameType, manager, map, player, this, playerManager);
-            });
-
-        });
-        thread.start();
+        parseSchematic(player, map, directory);
     }
     public void init(Player player, boolean debug) throws IOException {
         if (debug) {
@@ -103,24 +97,25 @@ public class GameInstance {
 
             System.out.println("Loading map " + map.getName() + " from " + map.getMapPath());
             player.sendMessage(Component.text("Loading map " + map.getName() + " from " + map.getMapPath()).color(NamedTextColor.GREEN));
-            Thread thread = new Thread(() -> {
-                Schematic schematic;
-                try {
-                    schematic = Scaffolding.fromFile(new File(directory));
-                } catch (IOException | NBTException e) {
-                    throw new RuntimeException(e);
-                }
-                schematic.build(instance, new Pos(0, 40, 0)).whenComplete((result, exception) -> {
-                    System.out.println("Map loaded!");
-                    player.sendMessage(Component.text("Map loaded.").color(NamedTextColor.GREEN));
-                    new SchematicLoadEvent(instance, gameType, manager, map, player, this, playerManager);
-
-                });
-
-            });
-            thread.start();
+            parseSchematic(player, map, directory);
         } else {
             init(player);
         }
+    }
+
+    private void parseSchematic(Player player, Map map, String directory) {
+        MinecraftServer.getSchedulerManager().scheduleTask(() -> {
+            Schematic schematic;
+            try {
+                schematic = Scaffolding.fromFile(new File(directory));
+            } catch (IOException | NBTException e) {
+                throw new RuntimeException(e);
+            }
+            schematic.build(instance, new Pos(0, 40, 0)).whenComplete((result, exception) -> {
+                System.out.println("Map loaded!");
+                new SchematicLoadEvent(instance, gameType, map, player, this, playerManager, teamManager);
+            });
+
+        }, TaskSchedule.millis(0), TaskSchedule.park(), ExecutionType.ASYNC);
     }
 }

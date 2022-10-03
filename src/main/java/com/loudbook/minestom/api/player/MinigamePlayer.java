@@ -1,7 +1,9 @@
 package com.loudbook.minestom.api.player;
 
+import com.loudbook.minestom.api.game.GameInstance;
 import com.loudbook.minestom.api.game.GameType;
 import com.loudbook.minestom.api.team.PlayerTeam;
+import com.loudbook.minestom.api.team.PlayerTeamManager;
 import lombok.Getter;
 import lombok.Setter;
 import net.kyori.adventure.text.Component;
@@ -12,6 +14,7 @@ import net.minestom.server.entity.PlayerSkin;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.network.packet.server.play.PlayerInfoPacket;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -27,19 +30,37 @@ public class MinigamePlayer {
     @Setter
     private Instance instance;
     @Setter
+    private boolean isDead = false;
+    @Setter
     private boolean isHidden = false;
     public MinigamePlayer(Player player, PlayerSkin skin){
         this.player = player;
         this.skin = skin;
     }
 
-    public void sendToInstance(Instance instance){
-        this.player.setInstance(instance);
-        this.setInstance(instance);
-        MinecraftServer.getConnectionManager().getOnlinePlayers().forEach((player -> {
-            if (player.getInstance() != instance){
-                hide();
+    public void sendToInstance(GameInstance gameInstance, PlayerTeamManager teamManager){
+        this.instance = gameInstance.getInstance();
+        MinigamePlayer player = this;
+        List<PlayerTeam> availableTeams = new ArrayList<>();
+        teamManager.getTeams().forEach(team -> {
+            if (team.getPlayers() == null || team.getPlayers().size() != gameInstance.getGameType().getPlayersPerTeam()){
+                availableTeams.add(team);
             }
+        });
+        PlayerTeam selectedTeam = availableTeams.get(0);
+        player.setTeam(selectedTeam);
+        this.player.setInstance(instance, selectedTeam.getSpawnLoc());
+        this.setInstance(instance);
+        MinecraftServer.getConnectionManager().getOnlinePlayers().forEach((player1 -> {
+            player1.updateViewableRule(viewer -> {
+                if (viewer.getInstance() != instance) {
+                    PlayerInfoPacket.RemovePlayer removePlayer = new PlayerInfoPacket.RemovePlayer(player1.getUuid());
+                    PlayerInfoPacket packet = new PlayerInfoPacket(PlayerInfoPacket.Action.REMOVE_PLAYER, removePlayer);
+                    viewer.sendPacket(packet);
+                    return false;
+                }
+                return true;
+            });
         }));
     }
     public void toggleHidden(){
@@ -61,7 +82,6 @@ public class MinigamePlayer {
                     new PlayerInfoPacket.AddPlayer(player.getUuid(), player.getUsername(), prop, player.getGameMode(), player.getLatency(), player.getDisplayName(), null));
             viewer.sendPacket(info);
             return true;});
-        player.sendMessage("showing");
         this.isHidden = false;
     }
 

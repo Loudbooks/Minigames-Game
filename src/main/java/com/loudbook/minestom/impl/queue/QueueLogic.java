@@ -80,17 +80,13 @@ public class QueueLogic implements EventListener<InstanceTickEvent> {
                             GameInstance gameInstance = numberOfPlayers.get(Collections.max(numberOfPlayers.keySet()));
                             if (gameInstance != null) {
                                 if (gameInstance.getInstance() != player.getInstance()) {
-                                    if (gameInstance.getPlayersWaiting()!=null){
-                                        gameInstance.getPlayersWaiting().add(player);
+                                    if (gameInstance.isReady()) {
+                                        minigamePlayer.sendToInstance(gameInstance, gameInstance.getTeamManager());
                                         minigamePlayer.setQueuedGame(null);
                                         this.queue.getPriorityQueue().get(type).remove(uuid);
-                                        System.out.println("Found an loading instance for " + player.getUsername() + ", ID: " + gameInstance.getInstance().getUniqueId());
-                                        return Result.SUCCESS;
+                                        System.out.println("Found an instance for " + player.getUsername() + ", ID: " + gameInstance.getInstance().getUniqueId());
+                                        player.sendMessage(Component.text("Instance found! ID: " + gameInstance.getInstance().getUniqueId()).color(NamedTextColor.GREEN));
                                     }
-                                    minigamePlayer.sendToInstance(gameInstance.getInstance());
-                                    minigamePlayer.setQueuedGame(null);
-                                    this.queue.getPriorityQueue().get(type).remove(uuid);
-                                    System.out.println("Found an instance for " + player.getUsername() + ", ID: " + gameInstance.getInstance().getUniqueId());
                                 } else {
                                     player.sendMessage(Component.text("You are already connected to this instance!").color(NamedTextColor.RED));
                                     this.queue.getPriorityQueue().get(type).remove(uuid);

@@ -8,6 +8,7 @@ import com.loudbook.minestom.impl.queue.QueueLogic;
 import com.loudbook.minestom.impl.survival.DamageHandler;
 import com.loudbook.minestom.impl.survival.DeathHandler;
 import com.loudbook.minestom.impl.survival.PlayerJoinHandler;
+import com.loudbook.minestom.impl.survival.TickCountdown;
 import com.loudbook.minestom.listener.PlayerLogin;
 import com.loudbook.minestom.listener.basics.BlockListener;
 import com.loudbook.minestom.listener.basics.PickupListener;
@@ -77,8 +78,9 @@ public class Main extends Extension {
                 .addListener(new PickupListener())
                 .addListener(new DamageHandler(playerManager))
                 .addListener(new RespawnListener(instanceContainer))
-                .addListener(new PlayerJoinHandler(gameInstanceManager, gameInstanceManager.getGameInstances()))
-                .addListener(new DeathHandler(playerManager));
+                .addListener(new PlayerJoinHandler(gameInstanceManager, gameInstanceManager.getGameInstances(), playerManager))
+                .addListener(new DeathHandler(playerManager))
+                .addListener(new TickCountdown(gameInstanceManager));
 
         MinecraftServer.getCommandManager().register(new QueueCommand(queue, playerManager));
         MinecraftServer.getCommandManager().register(new StopCommand());

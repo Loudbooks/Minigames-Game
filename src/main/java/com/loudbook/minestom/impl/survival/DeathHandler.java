@@ -31,6 +31,8 @@ public class DeathHandler implements EventListener<PlayerDeathEvent> {
                     Component.text(" was killed by ", NamedTextColor.GRAY),
                     Component.text(event.attacker().getPlayer().getName().toString(), event.attacker().getPlayer().getTeam().getTeamColor())
             ));
+            minigamePlayer.setDead(true);
+            minigamePlayer.hide();
         }));
         return Result.SUCCESS;
     }
