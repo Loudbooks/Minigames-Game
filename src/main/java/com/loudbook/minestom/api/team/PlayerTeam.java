@@ -11,6 +11,7 @@ import java.util.List;
 @Getter
 public class PlayerTeam {
     private NamedTextColor color;
+    private String formattedName;
     private int playerCount;
     @Setter
     private Pos spawnLoc;
@@ -19,6 +20,7 @@ public class PlayerTeam {
     public PlayerTeam(NamedTextColor color, int playerCount){
         this.color = color;
         this.playerCount = playerCount;
+        this.formattedName = color.toString().substring(0, 1).toUpperCase() + color.toString().substring(1);
     }
     public void addPlayer(MinigamePlayer player){
         this.players.add(player);

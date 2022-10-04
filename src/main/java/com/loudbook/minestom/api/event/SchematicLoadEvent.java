@@ -25,7 +25,44 @@ public class SchematicLoadEvent {
     private final InstanceContainer instance;
     private PlayerManager playerManager;
     private final GameType gameType;
+    public SchematicLoadEvent(InstanceContainer instance, GameType gameType, Map map,
+                              GameInstance gameInstance, PlayerManager playerManager, PlayerTeamManager playerTeamManager){
+        this.instance = instance;
+        this.gameType = gameType;
+        this.playerManager = playerManager;
+        System.out.println("Loaded map " + map.getName() + "!");
 
+        if (this.gameType == GameType.SURVIVAL){
+            JsonElement parsed;
+            try {
+                parsed = JsonParser.parseReader(new FileReader("./extensions/config/" + map.getName() + ".json"));
+            } catch (FileNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+
+            JsonObject object = parsed.getAsJsonObject();
+            for (PlayerTeam playerTeam : playerTeamManager.getTeams()) {
+                String stringPos = object.get("spawnpoints")
+                        .getAsJsonObject()
+                        .get(playerTeam.getColor().toString().toUpperCase()).getAsString();
+                String[] split = stringPos.split(",");
+                Pos spawnPos = new Pos(Double.parseDouble(split[0]), Double.parseDouble(split[1]), Double.parseDouble(split[2]));
+                playerTeam.setSpawnLoc(spawnPos);
+            }
+        }
+        MinecraftServer.getGlobalEventHandler().call(new InstanceLoadEvent(this.instance));
+        gameInstance.setAcceptingPlayers(true);
+        gameInstance.getPlayersWaiting().forEach(player1 -> {
+            MinigamePlayer minigamePlayer = playerManager.get(player1);
+            minigamePlayer.sendToGameInstance(gameInstance, playerTeamManager);
+            gameInstance.getPlayersWaiting().remove(player1);
+            if (gameInstance.getPlayersWaiting().size() == 0) {
+                gameInstance.setPlayersWaiting(null);
+                System.out.println("Sent players from waiting!");
+            }
+        });
+
+    }
     public SchematicLoadEvent(InstanceContainer instance, GameType gameType, Map map, Player player,
                               GameInstance gameInstance, PlayerManager playerManager, PlayerTeamManager playerTeamManager){
         this.instance = instance;
@@ -55,10 +92,10 @@ public class SchematicLoadEvent {
         player.setRespawnPoint(new Pos(0, 100, 0));
         player.setEnableRespawnScreen(false);
         MinecraftServer.getGlobalEventHandler().call(new InstanceLoadEvent(this.instance));
-        gameInstance.setReady(true);
+        gameInstance.setAcceptingPlayers(true);
         gameInstance.getPlayersWaiting().forEach(player1 -> {
             MinigamePlayer minigamePlayer = playerManager.get(player1);
-            minigamePlayer.sendToInstance(gameInstance, playerTeamManager);
+            minigamePlayer.sendToGameInstance(gameInstance, playerTeamManager);
             gameInstance.getPlayersWaiting().remove(player1);
             System.out.println("Sent player " + player.getUsername() + " from waiting!");
             player.updateViewableRule(viewer -> {
@@ -107,10 +144,10 @@ public class SchematicLoadEvent {
             player.setRespawnPoint(new Pos(0, 100, 0));
             player.setEnableRespawnScreen(false);
             MinecraftServer.getGlobalEventHandler().call(new InstanceLoadEvent(this.instance));
-            gameInstance.setReady(true);
+            gameInstance.setAcceptingPlayers(true);
             gameInstance.getPlayersWaiting().forEach(player1 -> {
                 MinigamePlayer minigamePlayer = playerManager.get(player1);
-                minigamePlayer.sendToInstance(gameInstance, playerTeamManager);
+                minigamePlayer.sendToGameInstance(gameInstance, playerTeamManager);
                 gameInstance.getPlayersWaiting().remove(player1);
                 System.out.println("Sent player " + player.getUsername() + " from waiting!");
                 player.updateViewableRule(viewer -> {
@@ -155,10 +192,10 @@ public class SchematicLoadEvent {
             player.setRespawnPoint(new Pos(0, 100, 0));
             player.setEnableRespawnScreen(false);
             MinecraftServer.getGlobalEventHandler().call(new InstanceLoadEvent(this.instance));
-            gameInstance.setReady(true);
+            gameInstance.setAcceptingPlayers(true);
             gameInstance.getPlayersWaiting().forEach(player1 -> {
                 MinigamePlayer minigamePlayer = playerManager.get(player1);
-                minigamePlayer.sendToInstance(gameInstance, playerTeamManager);
+                minigamePlayer.sendToGameInstance(gameInstance, playerTeamManager);
                 gameInstance.getPlayersWaiting().remove(player1);
                 System.out.println("Sent player " + player.getUsername() + " from waiting!");
                 player.updateViewableRule(viewer -> {

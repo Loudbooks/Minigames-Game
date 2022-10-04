@@ -3,13 +3,13 @@ package com.loudbook.minestom.api.player;
 import lombok.Getter;
 import net.minestom.server.entity.Player;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 public class PlayerManager {
     @Getter
-    private final Map<UUID, MinigamePlayer> playerMap = new HashMap<>();
+    private final ConcurrentMap<UUID, MinigamePlayer> playerMap = new ConcurrentHashMap<>();
     public MinigamePlayer add(Player player){
         if (!playerMap.containsKey(player.getUuid())){
             playerMap.put(player.getUuid(), new MinigamePlayer(player, player.getSkin()));
@@ -22,7 +22,7 @@ public class PlayerManager {
     public MinigamePlayer get(UUID uuid) {
         return this.playerMap.getOrDefault(uuid, null);
     }
-    public void remove(Player player){
-        this.playerMap.remove(player.getUuid());
+    public void remove(UUID uuid){
+        this.playerMap.remove(uuid);
     }
 }

@@ -41,8 +41,8 @@ public class QueueLogic implements EventListener<InstanceTickEvent> {
                 if (player != null) {
                     MinigamePlayer minigamePlayer = playerManager.get(player);
                     player.sendActionBar(Component.textOfChildren(
-                            Component.text("Queue position: ").color(NamedTextColor.GREEN),
-                            Component.text((this.queue.getPriorityQueue().get(type).indexOf(uuid) + 1) + "/" + this.queue.getPriorityQueue().size())));
+                            Component.text("Queue Position: ").color(NamedTextColor.GREEN),
+                            Component.text((this.queue.getPriorityQueue().get(type).indexOf(uuid) + 1) + "/" + this.queue.getPriorityQueue().get(type).size())));
                     if (i != 30) {
                         i++;
                         return Result.SUCCESS;
@@ -62,10 +62,8 @@ public class QueueLogic implements EventListener<InstanceTickEvent> {
                                     player.sendMessage(Component.text("There are too many instances running, please try again later.").color(NamedTextColor.RED));
                                     return Result.SUCCESS;
                                 }
-                                System.out.println("Passed first test...");
-                                manager.createInstance(type, minigamePlayer);
-                                this.queue.getPriorityQueue().get(type).remove(uuid);
-                                minigamePlayer.setQueuedGame(null);
+                                System.out.println("Creating a brand new instance!");
+                                manager.createInstance(type);
                                 return Result.SUCCESS;
                             } catch (IOException | NBTException e) {
                                 player.sendMessage(Component.text("An error occurred while creating a new instance. Please report this!", NamedTextColor.RED));
@@ -73,15 +71,14 @@ public class QueueLogic implements EventListener<InstanceTickEvent> {
                             }
 
                         } else {
-                            System.out.println("Found an existing instance!");
                             Map<Integer, GameInstance> numberOfPlayers = new HashMap<>();
                             availableInstances.forEach(gameInstance ->
                                     numberOfPlayers.put(gameInstance.getInstance().getPlayers().size(), gameInstance));
                             GameInstance gameInstance = numberOfPlayers.get(Collections.max(numberOfPlayers.keySet()));
                             if (gameInstance != null) {
-                                if (gameInstance.getInstance() != player.getInstance()) {
-                                    if (gameInstance.isReady()) {
-                                        minigamePlayer.sendToInstance(gameInstance, gameInstance.getTeamManager());
+                                if (gameInstance.getInstance() != minigamePlayer.getPlayer().getInstance()) {
+                                    if (gameInstance.isAcceptingPlayers()) {
+                                        minigamePlayer.sendToGameInstance(gameInstance, gameInstance.getTeamManager());
                                         minigamePlayer.setQueuedGame(null);
                                         this.queue.getPriorityQueue().get(type).remove(uuid);
                                         System.out.println("Found an instance for " + player.getUsername() + ", ID: " + gameInstance.getInstance().getUniqueId());

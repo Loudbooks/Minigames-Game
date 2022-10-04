@@ -5,6 +5,7 @@ import com.loudbook.minestom.api.player.PlayerManager;
 import lombok.Getter;
 import net.minestom.server.entity.Player;
 import net.minestom.server.instance.Instance;
+import net.minestom.server.instance.InstanceContainer;
 import net.minestom.server.instance.InstanceManager;
 import org.jglrxavpok.hephaistos.nbt.NBTException;
 
@@ -13,15 +14,20 @@ import java.util.HashMap;
 import java.util.Map;
 @Getter
 public class GameInstanceManager {
+    private final InstanceContainer lobby;
     private final PlayerManager playerManager;
     private final Map<Instance, GameInstance> gameInstances;
     private final InstanceManager manager;
-    public GameInstanceManager(InstanceManager manager, PlayerManager playerManager){
+    public GameInstanceManager(InstanceManager manager, PlayerManager playerManager, InstanceContainer lobby){
         this.playerManager = playerManager;
         this.gameInstances = new HashMap<>();
         this.manager = manager;
+        this.lobby = lobby;
     }
-
+    public void createInstance(GameType type) throws IOException, NBTException {
+        GameInstance gameInstance = new GameInstance(type, this, playerManager);
+        gameInstance.init();
+    }
     public void createInstance(GameType type, MinigamePlayer minigamePlayer) throws IOException, NBTException {
         Player player = minigamePlayer.getPlayer();
         GameInstance gameInstance = new GameInstance(type, this, playerManager);

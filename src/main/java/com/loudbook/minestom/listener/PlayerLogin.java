@@ -6,26 +6,26 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.minestom.server.entity.PlayerSkin;
 import net.minestom.server.event.EventListener;
-import net.minestom.server.event.player.PlayerLoginEvent;
+import net.minestom.server.event.player.PlayerSpawnEvent;
 import net.minestom.server.instance.Instance;
 import org.jetbrains.annotations.NotNull;
 
-public class PlayerLogin implements EventListener<PlayerLoginEvent> {
+public class PlayerLogin implements EventListener<PlayerSpawnEvent> {
     private final PlayerManager playerManager;
-    private final Instance instance;
-    public PlayerLogin(PlayerManager manager, Instance instance){
+    private final Instance lobby;
+    public PlayerLogin(PlayerManager manager, Instance lobby){
         this.playerManager = manager;
-        this.instance = instance;
+        this.lobby = lobby;
     }
 
 
     @Override
-    public @NotNull Class<PlayerLoginEvent> eventType() {
-        return PlayerLoginEvent.class;
+    public @NotNull Class<PlayerSpawnEvent> eventType() {
+        return PlayerSpawnEvent.class;
     }
 
     @Override
-    public @NotNull Result run(@NotNull PlayerLoginEvent event) {
+    public @NotNull Result run(@NotNull PlayerSpawnEvent event) {
         event.getPlayer().sendMessage(
                 Component.textOfChildren(
                         event.getPlayer().getName().color(NamedTextColor.GREEN).decorate(TextDecoration.BOLD),
@@ -35,8 +35,7 @@ public class PlayerLogin implements EventListener<PlayerLoginEvent> {
 
         PlayerSkin skin = PlayerSkin.fromUsername(event.getPlayer().getUsername());
         event.getPlayer().setSkin(skin);
-        this.playerManager.add(event.getPlayer());
-
+        playerManager.add(event.getPlayer());
         return Result.SUCCESS;
     }
 }

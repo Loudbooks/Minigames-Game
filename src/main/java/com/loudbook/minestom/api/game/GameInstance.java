@@ -1,6 +1,7 @@
 package com.loudbook.minestom.api.game;
 
 import com.loudbook.minestom.api.event.SchematicLoadEvent;
+import com.loudbook.minestom.api.player.MinigamePlayer;
 import com.loudbook.minestom.api.player.PlayerManager;
 import com.loudbook.minestom.api.team.PlayerTeamManager;
 import com.loudbook.minestom.api.util.GeneralUtils;
@@ -29,12 +30,15 @@ import static com.loudbook.minestom.Main.fullbright;
 @Getter
 public class GameInstance {
     @Setter
-    private boolean isReady = false;
+    private boolean acceptingPlayers = false;
     private final Countdown countdown;
     private final InstanceContainer instance;
+    private final InstanceManager instanceManager;
     private final GameType gameType;
     private final PlayerTeamManager teamManager;
     private final PlayerManager playerManager;
+    @Setter
+    private Integer tick = 0;
     @Setter
     private List<Player> playersWaiting = new ArrayList<>();
     private final int capacity;
@@ -51,8 +55,28 @@ public class GameInstance {
         instance.setGenerator(null);
         this.capacity = this.gameType.getPlayersPerTeam() * this.gameType.getNumberOfTeams();
         this.countdown = new Countdown(20, 9, this);
+        this.instanceManager = getInstanceManager();
     }
+    public void init() {
+        System.out.println("---------------------------------");
+        String type = gameType.name().toLowerCase();
 
+        List<String> results = new ArrayList<>();
+        File[] files = new File("./extensions/schematics/" + type).listFiles();
+
+        for (File file : files) {
+            if (file.isFile()) {
+                results.add(file.getName().replace(".schematic", ""));
+            }
+        }
+        Map map = new Map(GeneralUtils.randomListElement(results), gameType);
+        String directory = "./extensions/schematics/" + type + "/" + map.getName() + ".schematic";
+        map.setMapPath(directory);
+
+
+        System.out.println("Loading map " + map.getName() + " from " + map.getMapPath());
+        parseSchematic(map, directory);
+    }
     public void init(Player player) {
         playersWaiting.add(player);
         System.out.println("---------------------------------");
@@ -102,7 +126,21 @@ public class GameInstance {
             init(player);
         }
     }
+    private void parseSchematic(Map map, String directory) {
+        MinecraftServer.getSchedulerManager().scheduleTask(() -> {
+            Schematic schematic;
+            try {
+                schematic = Scaffolding.fromFile(new File(directory));
+            } catch (IOException | NBTException e) {
+                throw new RuntimeException(e);
+            }
+            schematic.build(instance, new Pos(0, 40, 0)).whenComplete((result, exception) -> {
+                System.out.println("Map loaded!");
+                new SchematicLoadEvent(instance, gameType, map, this, playerManager, teamManager);
+            });
 
+        }, TaskSchedule.millis(0), TaskSchedule.park(), ExecutionType.ASYNC);
+    }
     private void parseSchematic(Player player, Map map, String directory) {
         MinecraftServer.getSchedulerManager().scheduleTask(() -> {
             Schematic schematic;
@@ -117,5 +155,17 @@ public class GameInstance {
             });
 
         }, TaskSchedule.millis(0), TaskSchedule.park(), ExecutionType.ASYNC);
+    }
+
+    public void endGame(){
+        acceptingPlayers = false;
+        this.instance.getPlayers().forEach(player -> {
+            MinigamePlayer minigamePlayer = playerManager.get(player);
+            player.sendMessage(Component.text("The game has ended and you were sent to the lobby.").color(NamedTextColor.GREEN));
+            minigamePlayer.sendToInstance(manager.getLobby());
+        });
+        manager.getGameInstances().remove(instance);
+        instanceManager.unregisterInstance(instance);
+        System.out.println("Game ended! Instance unloaded.");
     }
 }

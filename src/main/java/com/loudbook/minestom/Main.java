@@ -9,9 +9,12 @@ import com.loudbook.minestom.impl.survival.DamageHandler;
 import com.loudbook.minestom.impl.survival.DeathHandler;
 import com.loudbook.minestom.impl.survival.PlayerJoinHandler;
 import com.loudbook.minestom.impl.survival.TickCountdown;
+import com.loudbook.minestom.listener.GameInstanceTick;
 import com.loudbook.minestom.listener.PlayerLogin;
+import com.loudbook.minestom.listener.PlayerQuitEvent;
 import com.loudbook.minestom.listener.basics.BlockListener;
 import com.loudbook.minestom.listener.basics.PickupListener;
+import com.loudbook.minestom.listener.basics.PlaceListener;
 import com.loudbook.minestom.listener.basics.RespawnListener;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.Pos;
@@ -37,7 +40,6 @@ public class Main extends Extension {
     public void initialize() {
         Queue queue = new Queue();
         PlayerManager playerManager = new PlayerManager();
-        GameInstanceManager gameInstanceManager = new GameInstanceManager(MinecraftServer.getInstanceManager(), playerManager);
         MinecraftServer.getDimensionTypeManager().addDimension(fullbright);
         System.out.println("""
                                 
@@ -60,8 +62,10 @@ public class Main extends Extension {
 
         InstanceContainer instanceContainer = instanceManager.createInstanceContainer(fullbright);
 
+
         instanceContainer.setGenerator(unit ->
                 unit.modifier().fillHeight(0, 40, Block.GRASS_BLOCK));
+        GameInstanceManager gameInstanceManager = new GameInstanceManager(MinecraftServer.getInstanceManager(), playerManager, instanceContainer);
         GlobalEventHandler globalEventHandler = MinecraftServer.getGlobalEventHandler();
         globalEventHandler.addListener(PlayerLoginEvent.class, event -> {
             final Player player = event.getPlayer();
@@ -76,11 +80,14 @@ public class Main extends Extension {
                 .addListener(new BlockListener())
                 .addListener(new QueueLogic(queue, gameInstanceManager, playerManager))
                 .addListener(new PickupListener())
-                .addListener(new DamageHandler(playerManager))
+                .addListener(new DamageHandler(playerManager, gameInstanceManager))
                 .addListener(new RespawnListener(instanceContainer))
                 .addListener(new PlayerJoinHandler(gameInstanceManager, gameInstanceManager.getGameInstances(), playerManager))
                 .addListener(new DeathHandler(playerManager))
-                .addListener(new TickCountdown(gameInstanceManager));
+                .addListener(new TickCountdown(gameInstanceManager))
+                .addListener(new PlaceListener())
+                .addListener(new PlayerQuitEvent(playerManager, gameInstanceManager))
+                .addListener(new GameInstanceTick(gameInstanceManager));
 
         MinecraftServer.getCommandManager().register(new QueueCommand(queue, playerManager));
         MinecraftServer.getCommandManager().register(new StopCommand());

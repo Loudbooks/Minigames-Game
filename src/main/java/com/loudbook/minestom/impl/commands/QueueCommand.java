@@ -26,11 +26,11 @@ public class QueueCommand extends Command {
             final String queueAction = context.get(queueActionArg);
             final GameType gameType = GameType.valueOf(context.get(gameTypeArg).toUpperCase());
             if (queueAction.equals("join")){
-                queue.add(gameType, minigamePlayer);
                 if (queue.getPriorityQueue().get(gameType).contains(minigamePlayer.getPlayer().getUuid())){
                     sender.sendMessage(Component.text("You are already in the queue!").color(NamedTextColor.YELLOW));
                     return;
                 }
+                queue.add(gameType, minigamePlayer);
                 sender.sendMessage(Component.text("You have joined the queue!").color(NamedTextColor.YELLOW));
             } else if (queueAction.equals("leave")){
                 queue.remove(gameType, minigamePlayer);
